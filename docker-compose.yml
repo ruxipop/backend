@@ -1,0 +1,41 @@
+version: '2'
+
+services:
+  app:
+    image: energy-backend
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    container_name: energy-backend
+    depends_on:
+      - db
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/db
+      - DATABASE_USER=popruxi
+      - DATABASE_PASSWORD=ruxi
+      - DATABASE_DBNAME=db
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
+    ports:
+      - "8080:8080"
+
+  db:
+    image: 'postgres:15-alpine'
+    container_name: db
+    restart: always
+    environment:
+      - POSTGRES_USER=popruxi
+      - POSTGRES_PASSWORD=ruxi
+      - POSTGRES_DB=db
+    ports:
+      - "5432:5432"
+  pgadmin:
+      image: dpage/pgadmin4
+      container_name: pgadmin
+      restart: always
+      environment:
+        PGADMIN_DEFAULT_EMAIL: ruxi@romania.ro
+        PGADMIN_DEFAULT_PASSWORD: ruxi
+      ports:
+        - "81:80"
+      depends_on:
+        - db
