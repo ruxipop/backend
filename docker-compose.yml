@@ -39,7 +39,7 @@ services:
         - "81:80"
       depends_on:
         - db
-        -rabbitmq
+        - rabbitmq
 
   rabbitmq:
     image: 'rabbitmq:3.11.3-management-alpine'
