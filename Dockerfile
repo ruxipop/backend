@@ -1,15 +1,15 @@
-FROM maven:3.8.6-jdk-11 AS builder
-
-COPY ./src/ /root/src
-COPY ./pom.xml /root/
-COPY ./checkstyle.xml /root/
-WORKDIR /root
+#buildkit is activated by default on host docker
+FROM maven:3.8.6-openjdk-18 AS builder
+#WORKDIR /opt/automotive-bootcamp/
+WORKDIR /app
+COPY pom.xml pom.xml
+RUN mvn -e -B dependency:resolve
+COPY src/ src/
 RUN mvn clean package -DskipTests
-RUN java -Djarmode=layertools -jar /root/target/demo-0.0.1-SNAPSHOT.jar list
-RUN java -Djarmode=layertools -jar /root/target/demo-0.0.1-SNAPSHOT.jar extract
-RUN ls -l /root
 
-FROM openjdk:11.0.6-jre
+FROM openjdk:18-jdk-alpine3.14
+WORKDIR /app
+COPY --from=builder /app/target/*.jar energy.jar
 
 ENV TZ=UTC
 ENV DATABASE_IP=db
