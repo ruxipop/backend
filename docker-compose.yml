@@ -1,37 +1,39 @@
-version: '3'
-
+version: '2'
 services:
-
-  demo-db:
-    image: containterregistrynamepopruxandramaria30643.azurecr.io/db:latest
-    healthcheck:
-      test: ["CMD", "pg_isready", "-q", "-d", "postgres", "-U", "root"]
-      timeout: 45s
-      interval: 10s
-      retries: 5
-    restart: always
-    container_name: db
-    environment:
-      - POSTGRES_DB=db
-      - POSTGRES_USER=popruxi
-      - POSTGRES_PASSWORD=ruxi
-      - POSTGRES_HOST_AUTH_METHOD=trust
-    ports:
-      - "5432:5432"
-
-  demo-be:
+  app:
     image: containterregistrynamepopruxandramaria30643.azurecr.io/popruxandramaria30643backend:latest
-    container_name: backend
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    container_name: energy-backend
+    depends_on:
+      - db
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/db
+      - DATABASE_USER=popruxi
+      - DATABASE_PASSWORD=ruxi
+      - DATABASE_DBNAME=db
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
     ports:
       - "8080:8080"
-    environment:
-      - SPRING_PROFILES_ACTIVE=prod
-      - DB_IP=db
-      - DB_PORT=5432
-      - DB_USER=popruxi
-      - DB_PASSWORD=ruxi
-      - DB_NAME=db
-      - SPRING_RABBITMQ_HOST=rabbitmq
-    depends_on:
-      - demo-db
 
+  db:
+    image: containterregistrynamepopruxandramaria30643.azurecr.io/db:latest
+    restart: always
+    environment:
+      - POSTGRES_USER=popruxi
+      - POSTGRES_PASSWORD=ruxi
+      - POSTGRES_DB=db
+    ports:
+      - "5432:5432"
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: pgadmin
+    restart: always
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ruxi@romania.ro
+      PGADMIN_DEFAULT_PASSWORD: ruxi
+    ports:
+      - "81:80"
+    depends_on:
+      - db
