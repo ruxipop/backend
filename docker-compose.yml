@@ -10,7 +10,7 @@ services:
       interval: 10s
       retries: 5
     restart: always
-    container_name: demo-db
+    container_name: db
     environment:
       - POSTGRES_DB=db
       - POSTGRES_USER=popruxi
