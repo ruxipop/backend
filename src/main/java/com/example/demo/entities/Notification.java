@@ -1,37 +1,34 @@
 package com.example.demo.entities;
 
+
 import com.fasterxml.jackson.annotation.*;
 import lombok.*;
 
 import javax.persistence.*;
-import java.util.*;
+import java.sql.*;
 
-@Entity(name="device")
+@Entity(name = "notification")
+
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
 @Setter
 @Builder
-public class Device {
+public class Notification {
+
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    @Column(name="id_device")
+    @Column(name = "id_notification")
     private Integer id;
 
     @Column
-    private String description;
+    private String message;
 
     @Column
-    private String address;
+    private String dates;
 
-    @Column
-    private  Double maxConsumation;
-
-    @OneToMany(mappedBy = "device")
-    private Collection<Measurement> measurements;
-
-    @OneToOne
-    @JoinColumn(name = "users_id")
+    @ManyToOne
+    @JoinColumn(name = "id_user")
     @JsonIgnore
     private User user;
 

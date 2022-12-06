@@ -1,11 +1,13 @@
 package com.example.demo.service;
 
 import com.example.demo.entities.*;
+import com.example.demo.entities.dto.*;
 import com.example.demo.repository.*;
 import org.springframework.beans.factory.annotation.*;
 import org.springframework.stereotype.*;
 
 import java.util.*;
+import java.util.concurrent.*;
 import java.util.stream.*;
 
 @Service
@@ -22,6 +24,8 @@ public class DeviceService {
     }
 
     public void deleteDevice(Integer id) {
+        measurementRepository.deleteMeasurementByDevice(deviceRepository.getDeviceById(id));
+
         deviceRepository.deleteById(id);
     }
 
@@ -37,43 +41,25 @@ public class DeviceService {
         deviceRepository.save(device);
     }
 
-    public Device addDevice(List<String> device) {
-        Device newDevice = new Device();
-        newDevice.setDescription(device.get(0));
-        newDevice.setAddress(device.get(1));
-        newDevice.setMaxConsumation(Double.parseDouble(device.get(2)));
-        deviceRepository.save(newDevice);
-        return newDevice;
+    public void addDevice(Device device) {
+        deviceRepository.save(device);
+//        return newDevice;
     }
 
     public User findOwner(Integer idDevice) {
         return deviceRepository.findOwner(idDevice);
     }
 
-//    public void update(List<String> newDevice, Integer user,Integer idDevice){
-////        Device oldDevice = deviceRepository.getDeviceById(idDevice);
-////        oldDevice.setDescription(newDevice.get(0));
-////        oldDevice.setAddress(newDevice.get(1));
-////        oldDevice.setMaxConsumation(Double.parseDouble(newDevice.get(2)));
-////        oldDevice.setUser(user);
-////        deviceRepository.save(oldDevice);
-//
-//    }
 
     public void update(Integer idOwner, Device device) {
-        Device oldDevice = deviceRepository.getDeviceById(device.getId());
 
-
-        oldDevice.setDescription(device.getDescription());
-        oldDevice.setAddress(device.getAddress());
-        oldDevice.setMaxConsumation(device.getMaxConsumation());
-        oldDevice.setMeasurements(device.getMeasurements());
         if (idOwner == 0) {
-            oldDevice.setUser(null);
+           device.setUser(null);
         } else {
-            oldDevice.setUser(this.userRepository.findUserById(idOwner).get());
+            device.setUser(this.userRepository.findUserById(idOwner).get());
+
         }
-        deviceRepository.save(oldDevice);
+        deviceRepository.save(device);
     }
 
     public List<User> getUsersWithoutDevices() {
@@ -88,11 +74,9 @@ public class DeviceService {
                         .collect(Collectors.toList());
     }
 
-    public Device addUserToDevice(Integer idDevice, Integer idUser) {
-        Device device = this.getDeviceById(idDevice);
+    public User addUserToDevice( Integer idUser) {
+
         User user = userRepository.findUserById(idUser).get();
-        device.setUser(user);
-        this.updateDevice(device);
-        return device;
+        return  user;
     }
 }

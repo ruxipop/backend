@@ -19,4 +19,7 @@ public interface DeviceRepository  extends CrudRepository<Device, Integer> {
 
     @Query("SELECT device.user FROM device device WHERE  device.id=:idDevice")
     User findOwner(@Param("idDevice") Integer idDevice);
+
+
+    Device findDeviceByUserUsername(String username);
 }

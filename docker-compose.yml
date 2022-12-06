@@ -39,3 +39,14 @@ services:
         - "81:80"
       depends_on:
         - db
+
+  rabbitmq:
+    image: 'rabbitmq:3.11.3-management-alpine'
+    ports:
+      - "5672:5672"
+      - "5673:5673"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: "sxuozhsx"
+      RABBITMQ_DEFAULT_PASS: "wM5Um7W2ww5VnK6uvXTVV0l4YsHjuzMT"
+      RABBITMQ_DEFAULT_QUEUE: "sd"

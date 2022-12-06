@@ -12,6 +12,7 @@ import java.time.*;
 @AllArgsConstructor
 @Getter
 @Setter
+@Builder
 public class Measurement {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)

@@ -14,9 +14,11 @@ import java.util.*;
 @AllArgsConstructor
 @Getter
 @Setter
+@Builder
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
+    @Column(name="id_user")
     private Integer id;
 
     @Column()
@@ -36,6 +38,9 @@ public class User {
 
     @Column()
     private String role;
+
+    @OneToMany(mappedBy = "user")
+    private Collection<Notification> notifications;
 
     public User(String username, String password) {
         this.username = username;

@@ -59,6 +59,8 @@ public class WebSecurityConfig {
                 .exceptionHandling().authenticationEntryPoint(unauthorizedHandler).and()
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and()
                 .authorizeRequests().antMatchers("/user/login").permitAll()
+                .antMatchers("/ws/**").permitAll()
+                .antMatchers("/topic/**").permitAll()
                 .anyRequest().authenticated();
 
 

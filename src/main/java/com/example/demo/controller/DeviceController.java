@@ -1,17 +1,15 @@
 package com.example.demo.controller;
 
 import com.example.demo.entities.*;
+import com.example.demo.entities.dto.*;
 import com.example.demo.service.*;
-import com.fasterxml.jackson.core.*;
-import com.fasterxml.jackson.databind.*;
-import org.json.*;
 import org.springframework.beans.factory.annotation.*;
-import org.springframework.http.*;
 import org.springframework.security.access.prepost.*;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.*;
 import java.util.*;
-import java.util.concurrent.*;
+import java.util.stream.*;
 
 @RequestMapping("/device")
 @CrossOrigin
@@ -28,41 +26,46 @@ public class DeviceController {
 
     @GetMapping("/getAllDevice")
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
-    public ResponseEntity<List<Device>> getDevices() {
+    public List<DeviceDTO> getDevices() {
         List<Device> deviceList = this.deviceService.getAllDevices();
-        return new ResponseEntity<>(deviceList, HttpStatus.OK);
+
+        return deviceList.stream().map(DeviceDTO::convertTODTO).collect(Collectors.toList());
     }
 
 
     @DeleteMapping(value = "{id}")
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public void deleteUserByID(@PathVariable Integer id) {
-        this.measurementService.deleteMeasurement(id);
+
         this.deviceService.deleteDevice(id);
     }
 
     @PostMapping("/add")
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
-    public Integer addDevice(@RequestBody List<String> device) {
-        return this.deviceService.addDevice(device).getId();
+    public void addDevice(@RequestBody DeviceDTO deviceDTO) throws IOException {
+        System.out.println("add "+deviceDTO);
+        Device device = deviceDTO.convertTO();
+        this.deviceService.addDevice(device);
+//        if (deviceDTO.getUser() != null) {
+//            Runtime.getRuntime().exec("java -jar /Users/popruxi/Desktop/demo/src/main/resources/sd-desktop.jar "+device.getId());
+//        }
     }
 
 
     @PostMapping("/updateDevice/{idOwner}")
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
-    public void updateDevice(@PathVariable Integer idOwner, @RequestBody Map<?, ?> device) throws JsonProcessingException {
-        JSONObject jsonObject = new JSONObject(device);
-        this.deviceService.update(idOwner, (new ObjectMapper().readValue(jsonObject.toString(), Device.class)));
-    }
+    public void updateDevice(@PathVariable Integer idOwner, @RequestBody DeviceDTO deviceDTO) throws IOException {
+        Device device = deviceDTO.convertTO();
+        this.deviceService.update(idOwner, device);
+//        if(idOwner!=null) {
+//            Runtime.getRuntime().exec("java -jar /Users/popruxi/Desktop/demo/src/main/resources/sd-desktop.jar "+device.getId());
+//        }
+        }
 
-
-    @PostMapping("/addUserToDevice/{idUser}/{idDevice}")
+    @PostMapping("/findUserByID/{idUser}")
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
-    public void addUserToDevice(@PathVariable Integer idUser, @PathVariable Integer idDevice) {
-        Device device = this.deviceService.addUserToDevice(idDevice, idUser);
-        ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
-        service.scheduleAtFixedRate(() ->
-                measurementService.setEnergyToDevice(device), 0, 1, TimeUnit.HOURS);
+    public User findUserByID(@PathVariable Integer idUser) {
+        return this.deviceService.addUserToDevice(idUser);
     }
 
     @GetMapping("/getUsers")
@@ -83,8 +86,8 @@ public class DeviceController {
     }
 
     @GetMapping(value = "/byID/{idDevice}")
-    public Device getDeviceById(@PathVariable Integer idDevice) {
-        return deviceService.getDeviceById(idDevice);
+    public DeviceDTO getDeviceById(@PathVariable Integer idDevice) {
+        return DeviceDTO.convertTODTO(deviceService.getDeviceById(idDevice));
     }
 
     @GetMapping(value = "/findUser/{idDevice}")

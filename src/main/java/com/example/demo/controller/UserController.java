@@ -1,13 +1,11 @@
 package com.example.demo.controller;
 
 import com.example.demo.entities.*;
+import com.example.demo.entities.dto.*;
 import com.example.demo.payload.*;
 import com.example.demo.security.jwt.*;
 import com.example.demo.security.jwt.service.*;
 import com.example.demo.service.*;
-import com.fasterxml.jackson.core.*;
-import com.fasterxml.jackson.databind.*;
-import org.json.*;
 import org.springframework.security.access.prepost.*;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,6 +34,9 @@ public class UserController {
     AuthenticationManager authenticationManager;
     @Autowired
     JwtUtils jwtUtils;
+    @Autowired
+    private NotificationService notificationService;
+
 
     @PostMapping("/login")
     public ResponseEntity<?> authenticateUser(@RequestBody LoginRequest loginRequest) {
@@ -71,32 +72,47 @@ public class UserController {
 
     @PostMapping("/add")
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
-    public void addUser(@RequestBody List<String> user) {
+    public void addUser(@RequestBody UserDTO user) {
         userService.addUser(user);
     }
 
     @PostMapping("/update")
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
-    public void updateUser(@RequestBody Map<?, ?> user) throws JsonProcessingException {
-        JSONObject jsonObject = new JSONObject(user);
-        userService.updateUser(new ObjectMapper().readValue(jsonObject.toString(), User.class));
+    public void updateUser(@RequestBody UserDTO userDTO) {
+        userService.updateUser(userDTO);
     }
 
 
     @GetMapping(value = "/getDevice/{username}")
     @PreAuthorize("hasAuthority('ROLE_USER')")
     public Device getDevice(@PathVariable String username) {
-        return userService.getDeviceOfGivenOwner(username);}
+        return userService.getDeviceOfGivenOwner(username);
+    }
 
 
     @DeleteMapping(value = "{username}")
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public void deleteUserByUsername(@PathVariable String username) {
-       userService.deleteUserByUsername(username);}
+        notificationService.deleteNotificationByUsername(username);
+        userService.deleteUserByUsername(username);
+
+    }
 
     @GetMapping(value = "{username}")
     public User getUserByUsername(@PathVariable String username) {
         return this.userService.getUserByUsername(username);
+    }
+
+    @GetMapping(value = "/getNotifications/{userID}")
+    @PreAuthorize("hasAuthority('ROLE_USER')")
+    public List<NotificationDTO> getNotification(@PathVariable Integer userID) {
+        return notificationService.getNotification(userID);
+    }
+
+    @DeleteMapping(value="/deleteNotification/{notID}")
+    @PreAuthorize("hasAuthority('ROLE_USER')")
+    public void deleteNotification(@PathVariable Integer notID){
+        notificationService.deleteNotification(notID);
     }
 
 }
