@@ -1,14 +1,28 @@
-#buildkit is activated by default on host docker
-FROM maven:3.8.6-openjdk-18 AS builder
-#WORKDIR /opt/automotive-bootcamp/
-WORKDIR /app
-COPY pom.xml pom.xml
-RUN mvn -e -B dependency:resolve
-COPY src/ src/
-RUN mvn clean package -DskipTests
+FROM maven:3.8.6-jdk-11 AS builder
 
-FROM openjdk:18-jdk-alpine3.14
-WORKDIR /app
-COPY --from=builder /app/target/*.jar energy.jar
-EXPOSE 8080
-ENTRYPOINT ["java", "-jar", "energy.jar"]
+COPY ./src/ /root/src
+COPY ./pom.xml /root/
+COPY ./checkstyle.xml /root/
+WORKDIR /root
+RUN mvn clean package -DskipTests
+RUN java -Djarmode=layertools -jar /root/target/demo-0.0.1-SNAPSHOT.jar list
+RUN java -Djarmode=layertools -jar /root/target/demo-0.0.1-SNAPSHOT.jar extract
+RUN ls -l /root
+
+FROM openjdk:11.0.6-jre
+
+ENV TZ=UTC
+ENV DATABASE_IP=db
+ENV DATABASE_PORT=5432
+ENV DATABASE_USER=popruxi
+ENV DATABASE_PASSWORD=ruxi
+ENV DATABASE_DBNAME=db
+
+
+COPY --from=builder /root/dependencies/ ./
+COPY --from=builder /root/snapshot-dependencies/ ./
+
+RUN sleep 10
+COPY --from=builder /root/spring-boot-loader/ ./
+COPY --from=builder /root/application/ ./
+ENTRYPOINT ["java", "org.springframework.boot.loader.JarLauncher","-XX:+UseContainerSupport -XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap -XX:MaxRAMFraction=1 -Xms512m -Xmx512m -XX:+UseG1GC -XX:+UseSerialGC -Xss512k -XX:MaxRAM=72m"]
